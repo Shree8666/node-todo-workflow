@@ -2,6 +2,6 @@ version: '3.9'
 
 services:
   web:
-    build: "ajitfawade14/node-app-todo:latest"
+    image: "ajitfawade14/node-app-todo:latest"
     ports:
       - "8000:8000"
