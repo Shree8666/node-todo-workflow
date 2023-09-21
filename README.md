@@ -45,7 +45,7 @@ To deploy the app, go to your Jenkins dashboard and click on **New Item**.
 
 Enter a name for your job (e.g., Node Todo App) and select **Freestyle project**. Then click **OK**.
 
-On the configuration page, you can add some description for your job if you want.
+On the configuration page, you can add some descriptions for your job if you want.
 
 Under **Source Code Management**, select **Git** and enter the repository URL: [https://github.com/ajitfawade/node-todo-cicd.git]. You can leave the other fields as default.
 
