@@ -1,4 +1,4 @@
-# Node Todo App with CI/CD
+# Node Todo App with CI/CD [![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fajitfawade%2Fnode-todo-cicd&countColor=%232ccce4&style=plastic&labelStyle=upper)](https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2Fajitfawade%2Fnode-todo-cicd)
 
 This is a simple to-do app that uses Node.js, Express, and EJS. It also uses Jenkins and Docker Compose for continuous integration and deployment.
 
