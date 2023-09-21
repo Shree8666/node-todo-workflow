@@ -1,6 +1,6 @@
 # Node Todo App with CI/CD
 
-This is a simple todo app that uses Node.js, Express, and EJS. It also uses Jenkins and Docker Compose for continuous integration and deployment.
+This is a simple to-do app that uses Node.js, Express, and EJS. It also uses Jenkins and Docker Compose for continuous integration and deployment.
 
 ## Prerequisites
 
