@@ -1,37 +1,37 @@
 pipeline {
-    agent any
-    
+    agent { label 'dev' }
+
     stages {
-        stage("Code") {
+
+        stage ('Code') {
             steps {
-                git url: "https://github.com/ajitfawade/node-todo-cicd.git", branch: "master"
-                echo "Code cloned !"
+                git url: 'https://github.com/ajitfawade/node-todo-cicd.git', branch: 'master'
             }
         }
         
-        stage("Build & Test") {
+        stage ('Build & Test') {
             steps {
-                sh "docker build . -t node-app-todo"
-                echo "docker build done"
+                echo 'Build & Test'
+                sh 'docker build . -t ajitfawade14/node-todo-app:latest'
             }
         }
         
-        stage("Push to repository") {
+        stage ('Login & Push Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: "dockerHub", passwordVariable: "dockerHubPass", usernameVariable: "dockerHubUser")]) {
-                    sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
-                    sh "docker tag node-app-todo ${env.dockerHubUser}/node-app-todo:latest"
-                    sh "docker push ${env.dockerHubUser}/node-app-todo:latest"
+                echo 'Logging in to docker hub and pushing image'
+                withCredentials([usernamePassword('credentialsId':'dockerhub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]){
+                    sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPassword}"
+                    sh "docker image push ajitfawade14/node-todo-app:latest"
                 }
-                echo "Code pushed to repository"
             }
         }
         
-        stage("Deploy") {
+        stage ('Deploy') {
             steps {
-                sh "docker-compose up -d"
-                echo "Deployed to AWS EC2"
+                echo 'Deploying'
+                sh 'docker-compose down && docker-compose up -d'
             }
         }
+
     }
 }
