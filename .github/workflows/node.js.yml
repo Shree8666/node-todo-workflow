@@ -38,23 +38,25 @@ jobs:
 
       # Step 5: SSH into Deployment EC2 & deploy Docker Compose
       - name: SSH & Deploy Docker Compose
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            set -e
-            DEPLOY_DIR=/home/ec2-user/node-microservice
+  uses: appleboy/ssh-action@v1.2.0
+  with:
+    host: ${{ secrets.EC2_HOST }}
+    username: ${{ secrets.EC2_USER }}
+    key: ${{ secrets.EC2_SSH_KEY }}
+    script: |
+      set -e
+      DEPLOY_DIR=/home/ec2-user/node-microservice
 
-            # Ensure folder exists
-            mkdir -p $DEPLOY_DIR
+      # Clone repo if folder doesn't exist
+      if [ ! -d "$DEPLOY_DIR/.git" ]; then
+        git clone -b main https://github.com/Shree8666/node-todo-workflow.git $DEPLOY_DIR
+      fi
 
-            # Copy code from runner to EC2
-            rsync -av --delete ./ ${{ secrets.EC2_USER }}@$DEPLOY_DIR/
+      cd $DEPLOY_DIR
+      git fetch origin
+      git reset --hard origin/main
 
-            cd $DEPLOY_DIR
-            docker compose pull
-            docker compose build --no-cache
-            docker compose up -d --force-recreate
-            docker image prune -f
+      docker compose pull
+      docker compose build --no-cache
+      docker compose up -d --force-recreate
+      docker image prune -f
