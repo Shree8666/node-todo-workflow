@@ -45,8 +45,15 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            cd /home/ec2-user/node-microservice || mkdir -p /home/ec2-user/node-microservice
-            git pull origin main
+            DEPLOY_DIR=/home/ec2-user/node-microservice
+
+            # Ensure folder exists
+            mkdir -p $DEPLOY_DIR
+
+            # Copy code from runner to EC2
+            rsync -av --delete ./ ${{ secrets.EC2_USER }}@$DEPLOY_DIR/
+
+            cd $DEPLOY_DIR
             docker compose pull
             docker compose build --no-cache
             docker compose up -d --force-recreate
