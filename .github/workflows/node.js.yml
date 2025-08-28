@@ -45,7 +45,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            cd /home/ec2-user/node-microservice || mkdir -p /home/ec2-user/node-microservice
+            cd /home/ec2-user/node-todo-app || mkdir -p /home/ec2-user/node-todo-app
             git pull origin main
             docker compose pull
             docker compose build --no-cache
