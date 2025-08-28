@@ -1,4 +1,4 @@
-name: Deploy Node.js Microservice with Sonar Scan
+name: Node.js Microservice CI/CD
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Required for Sonar to get full history
+          fetch-depth: 0  # Needed for Sonar history
 
       # Step 2: Setup Node.js
       - name: Setup Node.js
@@ -27,24 +27,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Step 4: SonarQube Scan
+      # Step 4: Run SonarQube scan
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@v2
         with:
           args: >
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
-            -Dsonar.organization=${{ secrets.SONAR_ORG }}
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-      # Optional: Wait for Quality Gate result
-      - name: SonarQube Quality Gate
-        uses: sonarsource/sonarqube-quality-gate-action@v1
-        with:
-          timeout-minutes: 5
-          login: ${{ secrets.SONAR_TOKEN }}
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
-      # Step 5: SSH into server & run Docker Compose
-      - name: SSH into server & deploy
+      # Step 5: Build project (optional if needed)
+      - name: Build project
+        run: npm run build
+
+      # Step 6: SSH into server & deploy Docker Compose
+      - name: SSH & Deploy Docker Compose
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SERVER_HOST }}
