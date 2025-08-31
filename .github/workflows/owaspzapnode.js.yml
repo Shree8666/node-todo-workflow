@@ -76,8 +76,8 @@ jobs:
         uses: zaproxy/action-baseline@v0.12.0
         with:
           target: "http://${{ secrets.EC2_HOST }}:8000"
-          cmd_options: "-a -m"
-          artifact_name: "zap-scan-report"   # ✅ avoid invalid artifact name issue
+          cmd_options: "-a -l FAIL"
+          artifact_name: "zap-scan-report"
 
 
       # Step 7: Upload ZAP Report to S3
