@@ -36,6 +36,7 @@ jobs:
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
             -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
+
       # Step 5: SSH into EC2 and deploy Docker Compose
       - name: SSH & Deploy Docker Compose
         uses: appleboy/ssh-action@v1.2.0
