@@ -71,12 +71,14 @@ jobs:
             # Cleanup old/unused images
             docker image prune -f
 
-      # Step 6: Run OWASP ZAP Scan
+      # Step 6: Run OWASP ZAP Scan (fail on Medium/High risks)
       - name: OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
           target: "http://${{ secrets.EC2_HOST }}:8000"
-          cmd_options: "-a"
+          cmd_options: "-a -m"
+          artifact_name: "zap-scan-report"   # ✅ avoid invalid artifact name issue
+
 
       # Step 7: Upload ZAP Report to S3
       - name: Upload ZAP Report to S3
