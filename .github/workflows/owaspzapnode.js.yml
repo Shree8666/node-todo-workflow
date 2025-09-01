@@ -66,6 +66,7 @@ jobs:
 
             # Cleanup old/unused images
             docker image prune -f
+          command_timeout: 30m
 
       # Step 6: Run OWASP ZAP Scan (fail on Medium/High risks)
       - name: OWASP ZAP Scan
