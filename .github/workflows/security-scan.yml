@@ -14,20 +14,21 @@ jobs:
       - name: Run ZAP Baseline on Scanner EC2
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.EC2_HOST }}         # Scanner EC2 host
-          username: ${{ secrets.EC2_USER }}     # Scanner EC2 user
-          key: ${{ secrets.EC2_SSH_KEY }}       # SSH key for scanner EC2
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          timeout: 15m   # ⬅️ allow up to 15 minutes
           script: |
             cd /home/ec2-user
             mkdir -p zap-reports
             docker run --rm -v /home/ec2-user/zap-reports:/zap/wrk/:rw \
-              ghcr.io/zaproxy/zaproxy:weekly \
-              zap-baseline.py \
-              -t http://${{ secrets.APP_EC2_HOST }}:8000 \
-              -J report_json.json \
-              -w report_md.md \
-              -r report_html.html \
-              -a -l FAIL
+            owasp/zap2docker-stable \
+            zap-baseline.py \
+            -t http://${{ secrets.APP_EC2_HOST }}:8000 \
+            -J report_json.json \
+            -w report_md.md \
+            -r report_html.html \
+            -a -l FAIL
 
       - name: Fetch Reports from Scanner EC2
         uses: appleboy/scp-action@v0.1.7
