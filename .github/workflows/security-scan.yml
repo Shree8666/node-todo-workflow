@@ -29,24 +29,6 @@ jobs:
              -w report.md \
              -a -l FAIL
 
-      - name: Fetch Reports from Scanner EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.ZAP_EC2_HOST }}
-          username: ${{ secrets.ZAP_EC2_USER }}
-          key: ${{ secrets.ZAP_EC2_SSH_KEY }}
-          source: "/home/ec2-user/zap-reports/"
-          target: "./zap-reports"
-          overwrite: true
-          debug: true
-
-    
-      - name: Upload Reports as Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-scan-reports
-          path: ./zap-reports
-
       - name: Upload Reports to S3
         run: |
           aws s3 cp ./zap-reports s3://my-report-s3-buckett/zap-reports/ --recursive
