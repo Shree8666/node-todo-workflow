@@ -11,28 +11,24 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Run ZAP Baseline on Scanner EC2
+      - name: Run ZAP Baseline and Upload to S3
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.ZAP_EC2_HOST }}
           username: ${{ secrets.ZAP_EC2_USER }}
           key: ${{ secrets.ZAP_EC2_SSH_KEY }}
-          timeout: 20m
+          timeout: 30m
           script: |
-             mkdir -p ~/zap-reports
-             docker run --rm -v ~/zap-reports:/zap/wrk/:rw \
-             ghcr.io/zaproxy/zaproxy:weekly \
-             zap-baseline.py \
-             -t http://${{ secrets.APP_EC2_HOST }}:8000 \
-             -J report.json \
-             -r report.html \
-             -w report.md \
-             -a -l FAIL
+            cd /home/ec2-user
+            mkdir -p zap-reports
+            docker run --rm -v /home/ec2-user/zap-reports:/zap/wrk/:rw \
+              ghcr.io/zaproxy/zaproxy:weekly \
+              zap-baseline.py \
+              -t http://${{ secrets.APP_EC2_HOST }}:8000 \
+              -J report.json \
+              -r report.html \
+              -w report.md \
+              -a -l FAIL
 
-      - name: Upload Reports to S3
-        run: |
-          aws s3 cp ./zap-reports s3://my-report-s3-buckett/zap-reports/ --recursive
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: eu-north-1   # <-- adjust to your bucket region
+            # Upload reports to S3 from inside EC2
+            aws s3 cp /home/ec2-user/zap-reports/ s3://my-report-s3-buckett/zap-reports/ --recursive --region eu-north-1
