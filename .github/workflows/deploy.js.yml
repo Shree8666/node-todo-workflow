@@ -47,6 +47,21 @@ jobs:
             set -e
             DEPLOY_DIR=/home/ec2-user/node-microservice
 
+            # Install git if not present
+            if ! command -v git &> /dev/null
+            then
+              echo "Git not found. Installing..."
+              if [ -f /etc/debian_version ]; then
+                sudo apt-get update -y && sudo apt-get install -y git
+              elif [ -f /etc/redhat-release ]; then
+                sudo yum install -y git
+              else
+                echo "Unsupported OS. Please install git manually."
+                exit 1
+              fi
+            fi
+
+            # Clone repo if folder doesn't exist
             if [ ! -d "$DEPLOY_DIR/.git" ]; then
               git clone -b main https://github.com/${{ github.repository }} $DEPLOY_DIR
             fi
