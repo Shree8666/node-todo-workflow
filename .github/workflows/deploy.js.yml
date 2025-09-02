@@ -55,6 +55,13 @@ jobs:
                 sudo apt-get update -y && sudo apt-get install -y git
               elif [ -f /etc/redhat-release ]; then
                 sudo yum install -y git
+              elif [ -f /etc/os-release ]; then
+                if grep -qi "Amazon Linux" /etc/os-release; then
+                  sudo dnf install -y git
+                else
+                  echo "Unsupported OS. Please install git manually."
+                  exit 1
+                fi
               else
                 echo "Unsupported OS. Please install git manually."
                 exit 1
