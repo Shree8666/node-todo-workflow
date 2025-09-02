@@ -1,40 +1,53 @@
-name: Security Scan (OWASP ZAP)
+name: OWASP ZAP Scan
 
 on:
-  workflow_run:
-    workflows: ["Node.js Microservice CI/CD"]   # must match Workflow 1 name
-    types:
-      - completed
+  workflow_dispatch: # or workflow_run after deploy
 
 jobs:
   zap-scan:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
-      # Step 1: OWASP ZAP Scan
-      - name: OWASP ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.12.0
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run ZAP Baseline on Scanner EC2
+        uses: appleboy/ssh-action@v1.2.0
         with:
-          target: "http://${{ secrets.EC2_HOST }}:8000"
-          docker_name: "zaproxy/zap-stable:latest"
-          cmd_options: "-a -l FAIL"
-          artifact_name: zap-scan-report
+          host: ${{ secrets.EC2_HOST }}         # Scanner EC2 host
+          username: ${{ secrets.EC2_USER }}     # Scanner EC2 user
+          key: ${{ secrets.EC2_SSH_KEY }}       # SSH key for scanner EC2
+          script: |
+            cd /home/ec2-user
+            mkdir -p zap-reports
+            docker run --rm -v /home/ec2-user/zap-reports:/zap/wrk/:rw \
+              ghcr.io/zaproxy/zaproxy:weekly \
+              zap-baseline.py \
+              -t http://${{ secrets.APP_EC2_HOST }}:8000 \
+              -J report_json.json \
+              -w report_md.md \
+              -r report_html.html \
+              -a -l FAIL
 
+      - name: Fetch Reports from Scanner EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "/home/ec2-user/zap-reports/*"
+          target: "./zap-reports"
 
+      - name: Upload Reports as Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-scan-reports
+          path: ./zap-reports
 
-      # Step 2: Upload ZAP Report to S3
-      - name: Upload ZAP Report to S3
+      - name: Upload Reports to S3
         run: |
-          aws s3 cp report_html.html s3://my-report-s3-buckett/zap-reports/zap-report-$(date +%F-%H-%M).html
+          aws s3 cp ./zap-reports s3://my-report-s3-buckett/zap-reports/ --recursive
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: eu-north-1
-
-      # Step 3: Upload ZAP Report as GitHub Artifact
-      - name: Upload ZAP Report Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-report
-          path: report_html.html
+          AWS_DEFAULT_REGION: eu-north-1   # <-- adjust to your bucket region
