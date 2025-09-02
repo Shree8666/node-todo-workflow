@@ -1,0 +1,38 @@
+name: Security Scan (OWASP ZAP)
+
+on:
+  workflow_run:
+    workflows: ["Node.js Microservice CI/CD"]   # must match Workflow 1 name
+    types:
+      - completed
+
+jobs:
+  zap-scan:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      # Step 1: OWASP ZAP Scan
+      - name: OWASP ZAP Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: "http://${{ secrets.EC2_HOST }}:8000"
+          docker_name: "owasp/zap2docker-weekly"
+          cmd_options: "-a -l FAIL"
+          artifact_name: zap-scan-report
+
+      # Step 2: Upload ZAP Report to S3
+      - name: Upload ZAP Report to S3
+        run: |
+          aws s3 cp report_html.html s3://my-report-s3-buckett/zap-reports/zap-report-$(date +%F-%H-%M).html
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: eu-north-1
+
+      # Step 3: Upload ZAP Report as GitHub Artifact
+      - name: Upload ZAP Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: report_html.html
