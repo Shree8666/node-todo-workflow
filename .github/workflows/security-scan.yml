@@ -32,13 +32,14 @@ jobs:
       - name: Fetch Reports from Scanner EC2
         uses: appleboy/scp-action@v0.1.7
         with:
-         host: ${{ secrets.ZAP_EC2_HOST }}
-         username: ${{ secrets.ZAP_EC2_USER }}
-         key: ${{ secrets.ZAP_EC2_SSH_KEY }}
-         source: "/home/ec2-user/zap-reports/*"
-         target: "./zap-reports"
-         overwrite: true
-         debug: true
+          host: ${{ secrets.ZAP_EC2_HOST }}
+          username: ${{ secrets.ZAP_EC2_USER }}
+          key: ${{ secrets.ZAP_EC2_SSH_KEY }}
+          source: "/home/ec2-user/zap-reports/"
+          target: "./zap-reports"
+          overwrite: true
+          debug: true
+
     
       - name: Upload Reports as Artifacts
         uses: actions/upload-artifact@v4
